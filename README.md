@@ -16,3 +16,5 @@ http://localhost:3000/ 进入下面页面
 <button type="button" onclick="攻击我!">攻击我</button>
 ```
 用户点击按钮 会弹出攻击我
+
+**本版本以及实现XSS拦截功能 如果想查看XSS攻击过程，请回退至上一个版本**

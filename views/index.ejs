@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title><%= title %></title>
+    <link rel='stylesheet' href='/stylesheets/style.css' />
+    <script src="/javascripts/encode.js" charset="utf-8"></script>
+    <script src="/javascripts/domParse.js" charset="utf-8"></script>
+    <script type="text/javascript">
+      var parse = function(str){//对传回来的数据进行编解码 配对 校验
+        var results = '';
+        try{
+           //he.unescape使用严格模式对str进行解码 反转义 来自encode  反转义的结果传给HTMLParse进行DOMParse
+          HTMLParser(he.unescape(str,{strict:true}),{
+            //DOMParse的几种状态
+            /*
+            *@parme tag 是否是标签
+            *@parme attrs 是否是属性
+            *@parme unart 是否是单标签/配对标签
+            */
+            start:function(tag,attrs,unart){/*开始标签*/
+              results += '<'+tag;
+              for(var i=0,len=attrs.length;i<len;i++){
+                results += " "+attrs[i].name +'="'+attrs[i].escaped+'"';
+              }
+              results += (unart?"/":"")+">";
+            },
+            end:function(tag){/*结束标签*/
+              results += "</"+tag+">";
+            },
+            chars:function(text){/*内容*/
+              results += text;
+            },
+            comment:function(text){/*注释*/
+              results += "<!--"+text+"-->";
+            }
+          });
+          return results;
+        }catch(e){
+          console.log(e);
+        }finally{
+
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <h1><%= title %></h1>
+    <p>Welcome to <%= title %></p>
+
+    <textarea name="name" id="txt" cols="80" rows="8">
+      <p>sks <img src="null" alt="" onerror="alert(1)" /></p>
+    </textarea>
+
+    <button type="button" name="button" id="btn">评论</button>
+    <button type="button" name="button" id="get">获取评论</button>
+  
+    <script type="text/javascript">
+      var btn = document.getElementById('btn');
+      var get = document.getElementById('get');
+      var txt = document.getElementById('txt');
+
+      btn.addEventListener('click',function(){
+        var xhr = new XMLHttpRequest();
+        var url = '/comment?comment='+txt.value;//设置接收地址
+        //由于服务端的接口是Get方式,故需要将接口地址和我们要传递的data部分通过url拼接的方式传入服务器
+        xhr.open('GET',url,true);
+        xhr.onreadystatechange = function(){//定义客户端响应
+          if(xhr.readyState == 4){
+            if(xhr.status == 200){
+              console.log(xhr);
+            }else{
+              console.log('error');
+            }
+          }
+        }
+        xhr.send(); //发起客户端和服务端的链接
+      });
+
+      //为获取评论提供接口
+      get.addEventListener('click',function(){
+        var xhr = new XMLHttpRequest();
+        var url = '/getComment';
+        xhr.open('GET',url,true);
+        xhr.onreadystatechange = function(){
+          if(xhr.readyState == 4){
+            if(xhr.status == 200){
+              var com = parse(JSON.parse(xhr.response).comment);
+              var txt = document.createElement('span');
+              txt.innerHTML = com; //因为com是经过DOMParse转义的 包含HTML标签
+              document.body.appendChild(txt);
+            }else{
+              console.log('error');
+            }
+          }
+        }
+        xhr.send(); 
+      })
+    </script>
+
+  </body>
+</html>

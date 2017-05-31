@@ -18,10 +18,15 @@
             *@parme unart 是否是单标签/配对标签
             */
             start:function(tag,attrs,unart){/*开始标签*/
+              //过滤不安全的标签
+              //style会隐藏页面 如果它写body:display:none;!important;
+              if(tag=='script' || tag=='style' || tag=='link' || tag=='iframe' || tag=='frame') return;
+              
               results += '<'+tag;
-              for(var i=0,len=attrs.length;i<len;i++){
+              //过滤掉属性 onclick\onerror 避免XSS执行的空间
+              /*for(var i=0,len=attrs.length;i<len;i++){
                 results += " "+attrs[i].name +'="'+attrs[i].escaped+'"';
-              }
+              }*/
               results += (unart?"/":"")+">";
             },
             end:function(tag){/*结束标签*/
